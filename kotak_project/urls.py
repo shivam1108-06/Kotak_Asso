@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
+
 from core import views
 
 handler404 = 'core.views.page_not_found'
@@ -20,3 +23,6 @@ urlpatterns = [
     path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
     path('newsletter/subscribe/', views.newsletter_subscribe, name='newsletter_subscribe'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,0 +1,1 @@
+web: gunicorn kotak_project.wsgi
