@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Office Gallery | Kotak & Associates{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="page-header-bg">
+        <span class="ph-shape ph-shape-1"></span>
+        <span class="ph-shape ph-shape-2"></span>
+        <span class="ph-shape ph-shape-3"></span>
+    </div>
+    <div class="page-header-inner">
+        <span class="ph-badge"><i class="fas fa-camera"></i> Office Gallery</span>
+        <h1>A Glimpse Inside <span class="ph-highlight">Our Office</span></h1>
+        <p>Take a virtual tour of our modern workspace in Ahmedabad — where financial clarity, strategy, and success come to life.</p>
+        <div class="ph-meta">
+            <div class="ph-meta-item"><i class="fas fa-map-marker-alt"></i> Altimus, Ashram Road</div>
+            <div class="ph-meta-item"><i class="fas fa-building"></i> Ahmedabad</div>
+            <div class="ph-meta-item"><i class="fas fa-images"></i> {{ photos|length }} Photos</div>
+        </div>
+    </div>
+</section>
+
+<!-- Gallery Grid -->
+<section class="gallery-section">
+    <div class="container">
+        <div class="gallery-grid">
+            {% for photo in photos %}
+            <figure class="gallery-item fade-in" data-full="{% static photo.file %}" data-title="{{ photo.title }}" data-caption="{{ photo.caption }}">
+                <img src="{% static photo.file %}" alt="{{ photo.title }}" loading="lazy">
+                <figcaption class="gallery-caption">
+                    <span class="gc-title">{{ photo.title }}</span>
+                    <span class="gc-sub">{{ photo.caption }}</span>
+                </figcaption>
+                <span class="gallery-zoom"><i class="fas fa-search-plus"></i></span>
+            </figure>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lbClose" aria-label="Close">&times;</button>
+    <button class="lightbox-nav lightbox-prev" id="lbPrev" aria-label="Previous">&#10094;</button>
+    <div class="lightbox-content">
+        <img src="" alt="" id="lbImage">
+        <div class="lightbox-caption">
+            <h3 id="lbTitle"></h3>
+            <p id="lbCaption"></p>
+        </div>
+    </div>
+    <button class="lightbox-nav lightbox-next" id="lbNext" aria-label="Next">&#10095;</button>
+</div>
+
+<!-- CTA Banner -->
+<section class="cta-banner">
+    <div class="container">
+        <div class="cta-center fade-in">
+            <h2>Want to Visit Us in Person?</h2>
+            <p>Drop by our office for a coffee and a conversation about growing your business.</p>
+            <div class="cta-buttons">
+                <a href="{% url 'contact' %}" class="btn btn-primary">Book a Meeting</a>
+                <a href="tel:7990432667" class="btn btn-outline">Call: 7990432667</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var items = Array.prototype.slice.call(document.querySelectorAll('.gallery-item'));
+    var lightbox = document.getElementById('lightbox');
+    var lbImage = document.getElementById('lbImage');
+    var lbTitle = document.getElementById('lbTitle');
+    var lbCaption = document.getElementById('lbCaption');
+    var current = 0;
+
+    function show(index) {
+        current = (index + items.length) % items.length;
+        var el = items[current];
+        lbImage.src = el.getAttribute('data-full');
+        lbImage.alt = el.getAttribute('data-title');
+        lbTitle.textContent = el.getAttribute('data-title');
+        lbCaption.textContent = el.getAttribute('data-caption');
+    }
+
+    function open(index) {
+        show(index);
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+        lightbox.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    items.forEach(function (el, i) {
+        el.addEventListener('click', function () { open(i); });
+    });
+
+    document.getElementById('lbClose').addEventListener('click', close);
+    document.getElementById('lbNext').addEventListener('click', function () { show(current + 1); });
+    document.getElementById('lbPrev').addEventListener('click', function () { show(current - 1); });
+    lightbox.addEventListener('click', function (e) { if (e.target === lightbox) close(); });
+
+    document.addEventListener('keydown', function (e) {
+        if (!lightbox.classList.contains('open')) return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowRight') show(current + 1);
+        else if (e.key === 'ArrowLeft') show(current - 1);
+    });
+})();
+</script>
+{% endblock %}

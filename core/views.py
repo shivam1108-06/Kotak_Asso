@@ -475,6 +475,27 @@ def service_detail(request, slug):
     })
 
 
+GALLERY_PHOTOS = [
+    {'file': 'images/office/office-05.jpg', 'title': 'Our Office Reception', 'caption': 'A & B Business Advisory LLP & Kotak & Associates'},
+    {'file': 'images/office/office-01.jpg', 'title': 'Director Cabin', 'caption': 'Where strategy meets execution'},
+    {'file': 'images/office/office-10.jpg', 'title': 'Client Lounge', 'caption': 'A warm welcome for every client'},
+    {'file': 'images/office/office-09.jpg', 'title': 'Workstation Area', 'caption': 'Our team hard at work'},
+    {'file': 'images/office/office-04.jpg', 'title': 'Meeting Space', 'caption': 'Collaborative discussions & planning'},
+    {'file': 'images/office/office-12.jpg', 'title': 'Executive Desk', 'caption': 'Leadership at the helm'},
+    {'file': 'images/office/office-02.jpg', 'title': 'Consultation Cabin', 'caption': 'Private client consultations'},
+    {'file': 'images/office/office-06.jpg', 'title': 'Office Interiors', 'caption': 'Modern, elegant workspace'},
+    {'file': 'images/office/office-03.jpg', 'title': 'Cabin with a View', 'caption': 'Bright & productive environment'},
+    {'file': 'images/office/office-08.jpg', 'title': 'Team Workspace', 'caption': 'Comfort meets professionalism'},
+    {'file': 'images/office/office-11.jpg', 'title': 'Awards & Recognition', 'caption': 'A shelf of achievements'},
+    {'file': 'images/office/office-07.jpg', 'title': 'Waiting Area', 'caption': 'Relax while we prepare'},
+    {'file': 'images/office/office-13.jpg', 'title': 'Reception Lounge', 'caption': 'Certified & trusted advisory'},
+]
+
+
+def gallery(request):
+    return render(request, 'gallery.html', {'photos': GALLERY_PHOTOS})
+
+
 def process(request):
     return render(request, 'process.html')
 

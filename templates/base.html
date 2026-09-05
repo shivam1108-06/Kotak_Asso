@@ -76,6 +76,7 @@
             <li><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
             <li><a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a></li>
             <li><a href="{% url 'services' %}" class="{% if request.resolver_match.url_name == 'services' or request.resolver_match.url_name == 'service_detail' %}active{% endif %}">Services</a></li>
+            <li><a href="{% url 'gallery' %}" class="{% if request.resolver_match.url_name == 'gallery' %}active{% endif %}">Gallery</a></li>
             <li><a href="{% url 'process' %}" class="{% if request.resolver_match.url_name == 'process' %}active{% endif %}">Process</a></li>
             <li><a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
         </ul>
@@ -145,6 +146,7 @@
                     <li><a href="{% url 'home' %}">Home</a></li>
                     <li><a href="{% url 'about' %}">About</a></li>
                     <li><a href="{% url 'services' %}">Services</a></li>
+                    <li><a href="{% url 'gallery' %}">Gallery</a></li>
                     <li><a href="{% url 'process' %}">Process</a></li>
                     <li><a href="{% url 'contact' %}">Contact</a></li>
                 </ul>
