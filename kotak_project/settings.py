@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
+    "axes",
     "core",
 ]
 
@@ -81,6 +82,14 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Must be last: blocks locked-out visitors (admin login lockout).
+    "axes.middleware.AxesMiddleware",
+]
+
+# AxesStandaloneBackend must come first so it can stop locked-out logins.
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 ROOT_URLCONF = "kotak_project.urls"
@@ -242,3 +251,21 @@ ADMIN_URL = os.getenv("ADMIN_URL", "admin/").strip("/") + "/"
 # only added to the pages when this is set, so set it only on the live site.
 
 GA_MEASUREMENT_ID = os.getenv("GA_MEASUREMENT_ID", "").strip()
+
+# ==========================
+# ADMIN LOGIN LOCKOUT (django-axes)
+# ==========================
+# After 5 wrong passwords, that IP address is blocked from logging in for
+# 1 hour. Every attempt is recorded in the admin under "Axes".
+# To unlock early:  python manage.py axes_reset
+
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 1  # hours
+AXES_LOCKOUT_PARAMETERS = ["ip_address"]
+AXES_RESET_ON_SUCCESS = True  # a correct login clears earlier failures
+AXES_CLIENT_IP_CALLABLE = "core.client_ip.get_client_ip"
+AXES_LOCKOUT_TEMPLATE = "admin_locked_out.html"
+
+# How many proxies sit in front of the site (used to find the real visitor IP;
+# see core/client_ip.py). Railway = 1. Railway behind Cloudflare = 2.
+TRUSTED_PROXY_COUNT = int(os.getenv("TRUSTED_PROXY_COUNT", "1" if IS_PRODUCTION else "0"))

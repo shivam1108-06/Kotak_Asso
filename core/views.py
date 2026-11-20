@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.conf import settings
 from django.utils.http import url_has_allowed_host_and_scheme
+from .client_ip import get_client_ip
 from .models import BlogPost, ContactMessage, NewsletterSubscriber
 
 
@@ -15,18 +16,10 @@ from .models import BlogPost, ContactMessage, NewsletterSubscriber
 # Spam protection for the public forms
 # ---------------------------------------------------------------------------
 
-def _client_ip(request):
-    # Railway's proxy puts the visitor's real IP first in X-Forwarded-For.
-    forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
-    if forwarded:
-        return forwarded.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR', '')
-
-
 def _too_many_submissions(request, form_name, limit, window_seconds):
     """True once this visitor has sent `form_name` more than `limit` times
     within `window_seconds`."""
-    key = f'rl:{form_name}:{_client_ip(request)}'
+    key = f'rl:{form_name}:{get_client_ip(request)}'
     if cache.add(key, 1, window_seconds):
         return False
     try:

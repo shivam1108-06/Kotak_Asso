@@ -180,6 +180,7 @@ The `Procfile` runs migrations and `collectstatic`, then starts Gunicorn on each
 | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
 | `DEBUG` | `False` |
 | `GA_MEASUREMENT_ID` | Your Google Analytics 4 ID, e.g. `G-XXXXXXXXXX` (optional) |
+| `TRUSTED_PROXY_COUNT` | `1` on Railway; `2` if Cloudflare is in front (optional) |
 | `ADMIN_URL` | Secret admin address, e.g. `ka-office-7391` (optional, default `admin`) |
 | `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `CONTACT_NOTIFICATION_EMAIL` | Gmail App Password settings above |
 | `ALLOWED_HOSTS` / `CSRF_TRUSTED_ORIGINS` | Only needed for a custom domain, e.g. `kotakassociates.in,www.kotakassociates.in` and `https://kotakassociates.in,https://www.kotakassociates.in` (keep the `.railway.app` entries too) |
@@ -187,6 +188,15 @@ The `Procfile` runs migrations and `collectstatic`, then starts Gunicorn on each
 4. Create an admin account from Railway's shell: `python manage.py createsuperuser`.
 
 In production (detected via Railway's `RAILWAY_ENVIRONMENT`, or `PRODUCTION=true` elsewhere) the app refuses to start without `SECRET_KEY` or a PostgreSQL `DATABASE_URL`, and enables HTTPS redirect, secure cookies and HSTS (`SECURE_HSTS_SECONDS`, default 3600; raise it once the domain is final).
+
+## Admin login lockout
+
+[django-axes](https://django-axes.readthedocs.io/) blocks an IP address from the admin login for **1 hour after 5 wrong passwords**
+(a correct login clears earlier failures). Attempts are listed in the admin under **Axes**.
+
+- Unlock immediately: `python manage.py axes_reset`
+- The real visitor IP is read via `core/client_ip.py`. Set `TRUSTED_PROXY_COUNT` to the number of proxies in front
+  of the site: `1` on Railway (default in production), `2` if Cloudflare is also in front.
 
 ## Blog (Insights)
 
