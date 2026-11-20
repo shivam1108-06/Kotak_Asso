@@ -26,6 +26,7 @@
         <div class="contact-form-centered fade-in">
             <form class="contact-form" method="POST" action="{% url 'contact_submit' %}" id="contactForm">
                 {% csrf_token %}
+                <div class="hp-field" aria-hidden="true"><label>Leave this field empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
                 <div class="form-header">
                     <h3>Send Us a Message</h3>
                     <p>Fill in the details below and we'll get back to you within 24 hours.</p>
@@ -51,14 +52,14 @@
                             <label for="name">Full Name *</label>
                             <div class="input-wrapper">
                                 <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                <input type="text" id="name" name="name" placeholder="Your full name" required>
+                                <input type="text" id="name" name="name" placeholder="Your full name" required maxlength="100">
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="email">Email Address *</label>
                             <div class="input-wrapper">
                                 <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                                <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                                <input type="email" id="email" name="email" placeholder="your@email.com" required maxlength="254">
                             </div>
                         </div>
                     </div>
@@ -67,14 +68,14 @@
                             <label for="phone">Phone Number</label>
                             <div class="input-wrapper">
                                 <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                                <input type="tel" id="phone" name="phone" placeholder="+91 XXXXX XXXXX">
+                                <input type="tel" id="phone" name="phone" placeholder="+91 XXXXX XXXXX" maxlength="20">
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="company_name">Company Name</label>
                             <div class="input-wrapper">
                                 <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-                                <input type="text" id="company_name" name="company_name" placeholder="Your company name">
+                                <input type="text" id="company_name" name="company_name" placeholder="Your company name" maxlength="200">
                             </div>
                         </div>
                     </div>
@@ -136,7 +137,7 @@
                         <label for="message">Your Message *</label>
                         <div class="input-wrapper textarea-wrapper">
                             <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                            <textarea id="message" name="message" rows="5" placeholder="Tell us about your requirements, challenges, or questions..." required></textarea>
+                            <textarea id="message" name="message" rows="5" maxlength="5000" placeholder="Tell us about your requirements, challenges, or questions..." required></textarea>
                         </div>
                     </div>
                     <div class="form-actions">
@@ -173,7 +174,7 @@
                 <ul class="mic-details">
                     <li><i class="fas fa-phone"></i> <a href="tel:+919427877187">+91 94278 77187</a></li>
                     <li><i class="fas fa-envelope"></i> <a href="mailto:kotak810@gmail.com">kotak810@gmail.com</a></li>
-                    <li><i class="far fa-clock"></i> Mon - Sat, 9:00 AM - 6:00 PM</li>
+                    <li><i class="far fa-clock"></i> Mon - Sat, 10:30 AM - 6:30 PM</li>
                 </ul>
                 <a href="https://www.google.com/maps/dir/?api=1&destination=Altimus+Ashram+Road+Ahmedabad+380009"
                    target="_blank" rel="noopener" class="btn btn-primary mic-directions">

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static blog_format %}
+
+{% block title %}{{ post.title }} | Kotak & Associates{% endblock %}
+{% block meta_desc %}{{ post.summary }}{% endblock %}
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_description %}{{ post.summary }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}{% static post.cover_image %}{% endblock %}
+
+{% block content %}
+<article class="post">
+    <header class="post-hero">
+        <img src="{% static post.cover_image %}" alt="" class="post-hero-img">
+        <div class="post-hero-overlay"></div>
+        <div class="post-hero-inner">
+            {% if not post.is_live %}
+            <div class="post-draft-note"><i class="fas fa-eye-slash"></i> Preview &mdash; this post is not public yet (only admins can see it)</div>
+            {% endif %}
+            <a href="{% url 'blog_list' %}?category={{ post.category }}" class="blog-tag">{{ post.get_category_display }}</a>
+            <h1>{{ post.title }}</h1>
+            <div class="post-meta">
+                <span><i class="far fa-user"></i> {{ post.author_name }}</span>
+                <span><i class="far fa-calendar"></i> <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"j F Y" }}</time></span>
+                <span><i class="far fa-clock"></i> {{ post.reading_minutes }} min read</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="post-container">
+        <p class="post-summary">{{ post.summary }}</p>
+        <div class="post-body">
+            {{ post.body|render_body }}
+        </div>
+
+        <aside class="post-cta">
+            <h2>Want this applied to your business?</h2>
+            <p>Talk to our Virtual CFO team about your numbers &mdash; the first consultation is free.</p>
+            <div class="post-cta-actions">
+                <a href="{% url 'contact' %}" class="btn btn-primary">Book a Free Consultation</a>
+                <a href="https://wa.me/917990432667" target="_blank" rel="noopener" class="post-cta-wa"><i class="fab fa-whatsapp"></i> Chat on WhatsApp</a>
+            </div>
+        </aside>
+
+        <div class="post-share">
+            <span>Share:</span>
+            <a href="https://wa.me/?text={{ post.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}" target="_blank" rel="noopener" aria-label="Share on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri|urlencode }}" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="mailto:?subject={{ post.title|urlencode }}&body={{ request.build_absolute_uri|urlencode }}" aria-label="Share by email"><i class="fas fa-envelope"></i></a>
+        </div>
+
+        <a href="{% url 'blog_list' %}" class="post-back"><i class="fas fa-arrow-left"></i> All articles</a>
+    </div>
+
+    {% if related %}
+    <section class="post-related">
+        <div class="container">
+            <h2>More on {{ post.get_category_display }}</h2>
+            <div class="blog-grid">
+                {% for r in related %}
+                <a href="{{ r.get_absolute_url }}" class="blog-card">
+                    <div class="blog-card-img"><img src="{% static r.cover_image %}" alt="" loading="lazy"></div>
+                    <div class="blog-card-body">
+                        <h3 class="blog-card-title">{{ r.title }}</h3>
+                        <div class="blog-meta"><span><i class="far fa-calendar"></i> {{ r.published_at|date:"j M Y" }}</span></div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+</article>
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "{{ post.title|escapejs }}",
+    "description": "{{ post.summary|escapejs }}",
+    "image": "{{ request.scheme }}://{{ request.get_host }}{% static post.cover_image %}",
+    "datePublished": "{{ post.published_at|date:'c' }}",
+    "dateModified": "{{ post.updated_at|date:'c' }}",
+    "author": {"@type": "Organization", "name": "{{ post.author_name|escapejs }}"},
+    "publisher": {"@type": "Organization", "name": "Kotak & Associates"},
+    "mainEntityOfPage": "{{ request.build_absolute_uri|escapejs }}"
+}
+</script>
+{% endblock %}

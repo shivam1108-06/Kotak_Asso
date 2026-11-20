@@ -126,6 +126,22 @@
 
         </div>
 
+        {% if client_portal_url %}
+        <!-- Client Portal (Veritai) -->
+        <div class="portal-card fade-in">
+            <div class="portal-icon"><i class="fas fa-file-invoice"></i></div>
+            <div class="portal-body">
+                <span class="portal-label">Client Portal &middot; Powered by Veritai</span>
+                <h3>AI Invoice Processing for GST &amp; Tally</h3>
+                <p>Upload your GST invoices, have the details extracted automatically by AI, review them, and export straight to Tally &mdash; all in one secure online dashboard.</p>
+            </div>
+            <div class="portal-actions">
+                <a href="{{ client_portal_url }}" class="btn btn-primary" target="_blank" rel="noopener"><i class="fas fa-lock"></i> Client Login</a>
+                <a href="{% url 'contact' %}" class="portal-link">Request access <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Bottom CTA -->
         <div class="srv-bottom-cta fade-in">
             <h2>Ready to Transform Your Business Finances?</h2>

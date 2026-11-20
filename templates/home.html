@@ -31,7 +31,7 @@
         <h1>
             <span class="hero-line hero-line-1">Kotak & Associates</span>
             <span class="hero-amp">&amp;</span>
-            <span class="hero-line hero-line-2">A & B Business Advisory LLP</span>
+            <span class="hero-line hero-line-2">A & B Kotak House India Pvt. Ltd.</span>
         </h1>
         <p class="tagline">
             <span class="tagline-word">Unlock</span>
@@ -55,13 +55,13 @@
             </div>
             <div class="stat-divider"></div>
             <div class="stat-item">
-                <span class="stat-number" data-target="10">0</span><span class="stat-plus">X</span>
-                <span class="stat-label">Business Valuation</span>
+                <span class="stat-number" data-target="250">0</span><span class="stat-plus">+</span>
+                <span class="stat-label">Businesses Served</span>
             </div>
             <div class="stat-divider"></div>
             <div class="stat-item">
-                <span class="stat-number" data-target="100">0</span><span class="stat-plus">%</span>
-                <span class="stat-label">Client Satisfaction</span>
+                <span class="stat-number" data-target="12">0</span><span class="stat-plus">+</span>
+                <span class="stat-label">Years Experience</span>
             </div>
         </div>
     </div>
@@ -113,10 +113,10 @@
         <h2 class="section-title fade-in">Why Choose Us?</h2>
         <p class="section-subtitle fade-in">We deliver what your business truly needs</p>
         <div class="why-slideshow fade-in">
-            <img src="{% static 'images/office/office-01.jpg' %}" alt="Director cabin" class="why-slide">
-            <img src="{% static 'images/office/office-04.jpg' %}" alt="Meeting space" class="why-slide">
-            <img src="{% static 'images/office/office-09.jpg' %}" alt="Workstation area" class="why-slide">
-            <img src="{% static 'images/office/office-10.jpg' %}" alt="Client lounge" class="why-slide">
+            <img src="{% static 'images/office/office-01.jpg' %}" alt="Director cabin" class="why-slide" loading="lazy">
+            <img src="{% static 'images/office/office-04.jpg' %}" alt="Meeting space" class="why-slide" loading="lazy">
+            <img src="{% static 'images/office/office-09.jpg' %}" alt="Workstation area" class="why-slide" loading="lazy">
+            <img src="{% static 'images/office/office-10.jpg' %}" alt="Client lounge" class="why-slide" loading="lazy">
         </div>
         <div class="why-grid">
             <div class="why-card fade-in">
@@ -267,9 +267,40 @@
     </div>
 </section>
 
+{% if latest_posts %}
+<!-- Latest Insights (blog) -->
+<section class="home-insights">
+    <div class="container">
+        <h2 class="section-title fade-in">Latest Insights</h2>
+        <p class="section-subtitle fade-in">Practical finance guidance for business owners</p>
+        <div class="blog-grid">
+            {% for post in latest_posts %}
+            <a href="{{ post.get_absolute_url }}" class="blog-card fade-in">
+                <div class="blog-card-img">
+                    <img src="{% static post.cover_image %}" alt="" loading="lazy">
+                    <span class="blog-tag">{{ post.get_category_display }}</span>
+                </div>
+                <div class="blog-card-body">
+                    <h3 class="blog-card-title">{{ post.title }}</h3>
+                    <p class="blog-card-summary">{{ post.summary }}</p>
+                    <div class="blog-meta">
+                        <span><i class="far fa-calendar"></i> {{ post.published_at|date:"j M Y" }}</span>
+                        <span><i class="far fa-clock"></i> {{ post.reading_minutes }} min read</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <div class="home-insights-more fade-in">
+            <a href="{% url 'blog_list' %}" class="btn btn-primary">View All Articles</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <!-- Office Image Banner -->
 <section class="home-office-banner fade-in">
-    <img src="{% static 'images/office/office-05.jpg' %}" alt="Kotak & Associates Office">
+    <img src="{% static 'images/office/office-05.jpg' %}" alt="Kotak & Associates Office" loading="lazy">
     <div class="home-office-overlay">
         <div class="home-office-content">
             <h3>Our Office in Ahmedabad</h3>
@@ -286,7 +317,7 @@
             <p>Get a strategic financial partner without the cost of a full-time CFO. Let's grow together.</p>
             <div class="cta-buttons">
                 <a href="{% url 'contact' %}" class="btn btn-primary">Contact Us Today</a>
-                <a href="tel:7990432667" class="btn btn-outline">Call: 7990432667</a>
+                <a href="tel:+917990432667" class="btn btn-outline">Call: 7990432667</a>
             </div>
         </div>
     </div>

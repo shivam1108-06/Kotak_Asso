@@ -26,8 +26,9 @@ A Django-based corporate website for **Kotak & Associates**, a chartered account
 ## Tech Stack
 
 - **Python** 3.10+
-- **Django** 4.2.20
-- **SQLite** (default development database)
+- **Django** 6.0.6
+- **SQLite** locally, **PostgreSQL** in production (via `DATABASE_URL`)
+- **Gunicorn + WhiteNoise** for serving in production
 - **HTML / CSS / JavaScript** (server-rendered Django templates)
 - **Gmail SMTP** for transactional email
 
@@ -39,12 +40,6 @@ Install Python dependencies:
 
 ```bash
 pip install -r requirements.txt
-```
-
-`requirements.txt`:
-
-```
-Django==4.2.20
 ```
 
 ---
@@ -100,18 +95,17 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Configure email (IMPORTANT)
+### 4. Configure email (optional locally)
 
-Open `kotak_project/settings.py` and update the email settings with your own Gmail SMTP credentials:
+Email settings are read from environment variables (never hard-code them):
 
-```python
-EMAIL_HOST_USER = 'your-email@gmail.com'
-EMAIL_HOST_PASSWORD = 'your-gmail-app-password'
-DEFAULT_FROM_EMAIL = 'Kotak & Associates <your-email@gmail.com>'
-CONTACT_NOTIFICATION_EMAIL = 'your-email@gmail.com'
+```
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-gmail-app-password
+CONTACT_NOTIFICATION_EMAIL=where-inquiries-should-go@example.com
 ```
 
-> Use a Gmail **App Password** (not your real password). Generate one from your Google Account → Security → 2-Step Verification → App passwords.
+> Use a Gmail **App Password** (not your real password). Generate one from your Google Account → Security → 2-Step Verification → App passwords. Without these, contact messages are still saved and visible in /admin; only the notification email is skipped.
 
 ### 5. Run database migrations
 
@@ -172,17 +166,50 @@ Stores unique newsletter emails:
 
 ---
 
-## Security Notes (for production)
+## Deploying to Railway
 
-Before deploying, update `settings.py`:
+The `Procfile` runs migrations and `collectstatic`, then starts Gunicorn on each deploy.
 
-- Set `DEBUG = False`
-- Move `SECRET_KEY` to an environment variable
-- Move `EMAIL_HOST_PASSWORD` to an environment variable
-- Configure `ALLOWED_HOSTS` with your domain
-- Use a production-grade database (PostgreSQL / MySQL)
-- Serve static files via WhiteNoise / nginx
-- Enable HTTPS and set `SECURE_SSL_REDIRECT = True`
+1. Create a Railway project from this GitHub repo.
+2. Add a **PostgreSQL** database to the project and reference its `DATABASE_URL` in the web service.
+3. Set these variables on the web service:
+
+| Variable | Value |
+|---|---|
+| `SECRET_KEY` | A long random string (`python -c "import secrets; print(secrets.token_urlsafe(50))"`) |
+| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
+| `DEBUG` | `False` |
+| `GA_MEASUREMENT_ID` | Your Google Analytics 4 ID, e.g. `G-XXXXXXXXXX` (optional) |
+| `ADMIN_URL` | Secret admin address, e.g. `ka-office-7391` (optional, default `admin`) |
+| `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `CONTACT_NOTIFICATION_EMAIL` | Gmail App Password settings above |
+| `ALLOWED_HOSTS` / `CSRF_TRUSTED_ORIGINS` | Only needed for a custom domain, e.g. `kotakassociates.in,www.kotakassociates.in` and `https://kotakassociates.in,https://www.kotakassociates.in` (keep the `.railway.app` entries too) |
+
+4. Create an admin account from Railway's shell: `python manage.py createsuperuser`.
+
+In production (detected via Railway's `RAILWAY_ENVIRONMENT`, or `PRODUCTION=true` elsewhere) the app refuses to start without `SECRET_KEY` or a PostgreSQL `DATABASE_URL`, and enables HTTPS redirect, secure cookies and HSTS (`SECURE_HSTS_SECONDS`, default 3600; raise it once the domain is final).
+
+## Blog (Insights)
+
+Write articles in the admin panel under **Core → Blog posts → Add**.
+
+- **Status:** *Draft* is visible only to logged-in admins (with a preview notice); *Published* makes it public.
+  A future **Published at** date schedules the post.
+- **Formatting:** blank line = new paragraph, `## ` = sub-heading, `- ` = bullet, `1. ` = numbered point,
+  `**text**` = bold; web addresses become links. All text is escaped, so no HTML is needed or allowed.
+- **Cover image:** picked from images already in the project (no uploads, so nothing is lost on redeploy).
+- Pages: `/blog/`, `/blog/<slug>/`. The 3 newest posts also appear on the home page.
+  New posts are added to `/sitemap.xml` automatically.
+
+## Google Analytics
+
+Set the `GA_MEASUREMENT_ID` environment variable (e.g. `G-XXXXXXXXXX`) on the live server.
+When it is empty, no analytics code is added. Contact-form enquiries are sent to Analytics as
+`generate_lead` events and newsletter sign-ups as `sign_up` events (no names or emails are sent).
+
+## Social media links
+
+Footer icons are driven by `SOCIAL_LINKS` at the bottom of `kotak_project/settings.py`.
+Paste a full profile URL to show that icon (it is also shared with Google as an official profile); leave it empty to hide it.
 
 ---
 

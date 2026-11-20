@@ -1,9 +1,55 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import Http404
+from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.validators import validate_email
 from django.conf import settings
-from .models import ContactMessage, NewsletterSubscriber
+from django.utils.http import url_has_allowed_host_and_scheme
+from .models import BlogPost, ContactMessage, NewsletterSubscriber
+
+
+# ---------------------------------------------------------------------------
+# Spam protection for the public forms
+# ---------------------------------------------------------------------------
+
+def _client_ip(request):
+    # Railway's proxy puts the visitor's real IP first in X-Forwarded-For.
+    forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    if forwarded:
+        return forwarded.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR', '')
+
+
+def _too_many_submissions(request, form_name, limit, window_seconds):
+    """True once this visitor has sent `form_name` more than `limit` times
+    within `window_seconds`."""
+    key = f'rl:{form_name}:{_client_ip(request)}'
+    if cache.add(key, 1, window_seconds):
+        return False
+    try:
+        count = cache.incr(key)
+    except ValueError:  # entry expired between add() and incr()
+        cache.add(key, 1, window_seconds)
+        return False
+    return count > limit
+
+
+def _is_bot(request):
+    # Hidden "website" field: people never see it, bots fill it in.
+    return bool(request.POST.get('website', '').strip())
+
+
+def _safe_back_url(request, fallback='home'):
+    """The page the visitor came from, but only if it is on this site."""
+    referer = request.META.get('HTTP_REFERER', '')
+    if referer and url_has_allowed_host_and_scheme(
+        referer, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return referer
+    return fallback
 
 SERVICES_DATA = {
     'financial-planning-budgeting': {
@@ -17,8 +63,8 @@ SERVICES_DATA = {
         'highlights': [
             {'number': '200+', 'label': 'Budgets Prepared'},
             {'number': '35%', 'label': 'Avg. Cost Savings'},
-            {'number': '98%', 'label': 'Client Retention'},
-            {'number': '10+', 'label': 'Years Experience'},
+            {'number': '250+', 'label': 'Businesses Served'},
+            {'number': '12+', 'label': 'Years Experience'},
         ],
         'features': [
             'Annual & quarterly budget preparation',
@@ -436,7 +482,8 @@ SERVICE_SLUGS = list(SERVICES_DATA.keys())
 
 
 def home(request):
-    return render(request, 'home.html')
+    latest_posts = BlogPost.live()[:3]
+    return render(request, 'home.html', {'latest_posts': latest_posts})
 
 
 def about(request):
@@ -476,7 +523,7 @@ def service_detail(request, slug):
 
 
 GALLERY_PHOTOS = [
-    {'file': 'images/office/office-05.jpg', 'title': 'Our Office Reception', 'caption': 'A & B Business Advisory LLP & Kotak & Associates'},
+    {'file': 'images/office/office-05.jpg', 'title': 'Our Office Reception', 'caption': 'A & B Kotak House India Pvt. Ltd. and Kotak & Associates'},
     {'file': 'images/office/office-01.jpg', 'title': 'Director Cabin', 'caption': 'Where strategy meets execution'},
     {'file': 'images/office/office-10.jpg', 'title': 'Client Lounge', 'caption': 'A warm welcome for every client'},
     {'file': 'images/office/office-09.jpg', 'title': 'Workstation Area', 'caption': 'Our team hard at work'},
@@ -504,55 +551,76 @@ def contact(request):
     return render(request, 'contact.html')
 
 
+CONTACT_THANKS = 'Thank you! Your message has been sent. We will get back to you shortly.'
+
+
 def contact_submit(request):
-    if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip()
-        phone = request.POST.get('phone', '').strip()
-        company_name = request.POST.get('company_name', '').strip()
-        service_interested = request.POST.get('service_interested', '').strip()
-        budget_range = request.POST.get('budget_range', '').strip()
-        urgency = request.POST.get('urgency', '').strip()
-        message = request.POST.get('message', '').strip()
+    if request.method != 'POST':
+        return redirect('contact')
 
-        if name and email and message:
-            ContactMessage.objects.create(
-                name=name, email=email, phone=phone,
-                company_name=company_name,
-                service_interested=service_interested,
-                budget_range=budget_range,
-                urgency=urgency,
-                message=message,
+    if _is_bot(request):
+        # Pretend it worked so the bot moves on.
+        messages.success(request, CONTACT_THANKS)
+        return redirect('contact')
+
+    if _too_many_submissions(request, 'contact', limit=5, window_seconds=3600):
+        messages.error(request, 'You have sent several messages recently. Please wait a while, or call us directly.')
+        return redirect('contact')
+
+    name = request.POST.get('name', '').strip()
+    email = request.POST.get('email', '').strip()
+    phone = request.POST.get('phone', '').strip()
+    company_name = request.POST.get('company_name', '').strip()
+    service_interested = request.POST.get('service_interested', '').strip()
+    budget_range = request.POST.get('budget_range', '').strip()
+    urgency = request.POST.get('urgency', '').strip()
+    message = request.POST.get('message', '').strip()
+
+    if not (name and email and message):
+        messages.error(request, 'Please fill in all required fields.')
+        return redirect('contact')
+
+    inquiry = ContactMessage(
+        name=name, email=email, phone=phone,
+        company_name=company_name,
+        service_interested=service_interested,
+        budget_range=budget_range,
+        urgency=urgency,
+        message=message[:5000],
+    )
+    try:
+        # Checks email format, field lengths and dropdown choices.
+        inquiry.full_clean()
+    except ValidationError:
+        messages.error(request, 'Please check your details: use a valid email address and keep each field reasonably short.')
+        return redirect('contact')
+    inquiry.save()
+
+    safe_name = ' '.join(name.split())  # no line breaks in the subject
+    email_body = (
+        f'New contact form submission received.\n\n'
+        f'Name: {name}\n'
+        f'Email: {email}\n'
+        f'Phone: {phone or "N/A"}\n'
+        f'Company: {company_name or "N/A"}\n'
+        f'Service Interested: {service_interested or "N/A"}\n'
+        f'Budget Range: {budget_range or "N/A"}\n'
+        f'Timeline: {urgency or "N/A"}\n\n'
+        f'Message:\n{inquiry.message}\n'
+    )
+    if settings.CONTACT_NOTIFICATION_EMAIL:
+        try:
+            send_mail(
+                subject=f'New Contact Inquiry from {safe_name}',
+                message=email_body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.CONTACT_NOTIFICATION_EMAIL],
+                fail_silently=True,
             )
+        except Exception:
+            pass  # the inquiry is already saved and visible in /admin
 
-            email_subject = f'New Contact Inquiry from {name}'
-            email_body = (
-                f'New contact form submission received.\n\n'
-                f'Name: {name}\n'
-                f'Email: {email}\n'
-                f'Phone: {phone or "N/A"}\n'
-                f'Company: {company_name or "N/A"}\n'
-                f'Service Interested: {service_interested or "N/A"}\n'
-                f'Budget Range: {budget_range or "N/A"}\n'
-                f'Timeline: {urgency or "N/A"}\n\n'
-                f'Message:\n{message}\n'
-            )
-            try:
-                send_mail(
-                    subject=email_subject,
-                    message=email_body,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[settings.CONTACT_NOTIFICATION_EMAIL],
-                    fail_silently=True,
-                )
-            except Exception:
-                pass
-
-            messages.success(request, 'Thank you! Your message has been sent. We will get back to you shortly.')
-            return redirect('contact')
-        else:
-            messages.error(request, 'Please fill in all required fields.')
-
+    messages.success(request, CONTACT_THANKS, extra_tags='ga-lead')
     return redirect('contact')
 
 
@@ -577,14 +645,75 @@ def page_not_found(request, exception):
 
 
 def newsletter_subscribe(request):
-    if request.method == 'POST':
-        email = request.POST.get('newsletter_email', '').strip()
-        if email:
-            if not NewsletterSubscriber.objects.filter(email=email).exists():
-                NewsletterSubscriber.objects.create(email=email)
-                messages.success(request, 'Thank you for subscribing to our newsletter!')
-            else:
-                messages.info(request, 'You are already subscribed to our newsletter.')
-        else:
-            messages.error(request, 'Please enter a valid email address.')
-    return redirect(request.META.get('HTTP_REFERER', 'home'))
+    back = _safe_back_url(request)
+    if request.method != 'POST':
+        return redirect(back)
+
+    if _is_bot(request):
+        messages.success(request, 'Thank you for subscribing to our newsletter!')
+        return redirect(back)
+
+    if _too_many_submissions(request, 'newsletter', limit=5, window_seconds=3600):
+        messages.error(request, 'Too many attempts. Please try again later.')
+        return redirect(back)
+
+    email = request.POST.get('newsletter_email', '').strip().lower()
+    try:
+        if len(email) > 254:
+            raise ValidationError('Email too long')
+        validate_email(email)
+    except ValidationError:
+        messages.error(request, 'Please enter a valid email address.')
+        return redirect(back)
+
+    _, created = NewsletterSubscriber.objects.get_or_create(email=email)
+    if created:
+        messages.success(request, 'Thank you for subscribing to our newsletter!', extra_tags='ga-signup')
+    else:
+        messages.info(request, 'You are already subscribed to our newsletter.')
+    return redirect(back)
+
+
+# ---------------------------------------------------------------------------
+# Blog / Insights
+# ---------------------------------------------------------------------------
+
+def blog_list(request):
+    posts = BlogPost.live()
+    categories = dict(BlogPost.CATEGORY_CHOICES)
+    active_category = request.GET.get('category', '')
+    if active_category in categories:
+        posts = posts.filter(category=active_category)
+    else:
+        active_category = ''
+
+    page = Paginator(posts, 9).get_page(request.GET.get('page'))
+    used = set(BlogPost.live().values_list('category', flat=True))
+    return render(request, 'blog_list.html', {
+        'page': page,
+        'categories': [(k, v) for k, v in BlogPost.CATEGORY_CHOICES if k in used],
+        'active_category': active_category,
+        'active_category_label': categories.get(active_category, ''),
+    })
+
+
+def blog_detail(request, slug):
+    post = get_object_or_404(BlogPost, slug=slug)
+    # Drafts and scheduled posts: only logged-in staff may preview them.
+    if not post.is_live and not request.user.is_staff:
+        raise Http404
+    related = BlogPost.live().filter(category=post.category).exclude(pk=post.pk)[:3]
+    return render(request, 'blog_detail.html', {'post': post, 'related': related})
+
+
+def robots_txt(request):
+    from django.http import HttpResponse
+    from django.urls import reverse
+    lines = [
+        'User-agent: *',
+        'Disallow: /contact/submit/',
+        'Disallow: /newsletter/subscribe/',
+        '',
+        f"Sitemap: {request.build_absolute_uri(reverse('sitemap'))}",
+    ]
+    return HttpResponse('\n'.join(lines) + '\n', content_type='text/plain')

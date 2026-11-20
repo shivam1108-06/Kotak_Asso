@@ -4,14 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Kotak & Associates | A & B Business Advisory LLP{% endblock %}</title>
+    <title>{% block title %}Kotak & Associates | A & B Kotak House India Pvt. Ltd.{% endblock %}</title>
     <meta name="description" content="{% block meta_desc %}Expert Virtual CFO & Financial Advisory services in Ahmedabad. Financial Planning, Budgeting, Cash Flow Management, KPI Tracking, IPO Advisory by Kotak & Associates.{% endblock %}">
     <meta name="keywords" content="Virtual CFO, Financial Planning, Business Advisory, GST Compliance, CA Firm Ahmedabad, Kotak Associates">
     <meta name="author" content="Kotak & Associates">
     <meta property="og:title" content="{% block og_title %}Kotak & Associates | Virtual CFO Services{% endblock %}">
-    <meta property="og:description" content="Expert Virtual CFO & Financial Advisory services helping businesses achieve growth and financial clarity.">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="{% static 'images/logo.jpeg' %}">
+    <meta property="og:description" content="{% block og_description %}Expert Virtual CFO & Financial Advisory services helping businesses achieve growth and financial clarity.{% endblock %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% block og_image %}{% static 'images/logo.jpeg' %}{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:site_name" content="Kotak & Associates">
     <link rel="canonical" href="{{ request.build_absolute_uri }}">
     <link rel="icon" type="image/jpeg" href="{% static 'images/logo.jpeg' %}">
     <link rel="apple-touch-icon" href="{% static 'images/logo.jpeg' %}">
@@ -25,9 +27,9 @@
     {
         "@context": "https://schema.org",
         "@type": "ProfessionalService",
-        "name": "Kotak & Associates & A & B Business Advisory LLP",
+        "name": "Kotak & Associates and A & B Kotak House India Pvt. Ltd.",
         "description": "Expert Virtual CFO and Financial Advisory Services",
-        "url": "https://kotakassociates.com",
+        "url": "{{ request.scheme }}://{{ request.get_host }}/",
         "telephone": "+917990432667",
         "email": "kotak810@gmail.com",
         "address": {
@@ -39,13 +41,22 @@
             "addressCountry": "IN"
         },
         "openingHoursSpecification": [
-            {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "09:00", "closes": "18:00"},
-            {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "10:00", "closes": "16:00"}
+            {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"], "opens": "10:30", "closes": "18:30"}
         ],
-        "priceRange": "$$",
-        "sameAs": []
+        "priceRange": "₹₹",
+        "sameAs": [{% for s in social_links %}"{{ s.url|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
     }
     </script>
+    {% if ga_measurement_id %}
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_measurement_id }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ ga_measurement_id }}');
+    </script>
+    {% endif %}
 </head>
 <body>
 
@@ -64,7 +75,7 @@
             <img src="{% static 'images/logo.jpeg' %}" alt="KA Logo" class="logo-img">
             <span class="logo-text">
                 Kotak & Associates
-                <span>A & B Business Advisory LLP</span>
+                <span>A & B Kotak House India Pvt. Ltd.</span>
             </span>
         </a>
         <button class="nav-hamburger" id="navToggle" aria-label="Toggle navigation">
@@ -78,7 +89,21 @@
             <li><a href="{% url 'services' %}" class="{% if request.resolver_match.url_name == 'services' or request.resolver_match.url_name == 'service_detail' %}active{% endif %}">Services</a></li>
             <li><a href="{% url 'gallery' %}" class="{% if request.resolver_match.url_name == 'gallery' %}active{% endif %}">Gallery</a></li>
             <li><a href="{% url 'process' %}" class="{% if request.resolver_match.url_name == 'process' %}active{% endif %}">Process</a></li>
+            {% with n=request.resolver_match.url_name %}
+            <li class="nav-dropdown">
+                <a href="{% url 'team' %}" class="nav-dropdown-toggle {% if n == 'team' or n == 'testimonials' or n == 'benefits' or n == 'blog_list' or n == 'blog_detail' %}active{% endif %}" aria-haspopup="true">More <i class="fas fa-chevron-down"></i></a>
+                <ul class="nav-dropdown-menu">
+                    <li><a href="{% url 'team' %}" class="{% if n == 'team' %}active{% endif %}">Our Team</a></li>
+                    <li><a href="{% url 'testimonials' %}" class="{% if n == 'testimonials' %}active{% endif %}">Testimonials</a></li>
+                    <li><a href="{% url 'benefits' %}" class="{% if n == 'benefits' %}active{% endif %}">Benefits</a></li>
+                    <li><a href="{% url 'blog_list' %}" class="{% if n == 'blog_list' or n == 'blog_detail' %}active{% endif %}">Blog &amp; Insights</a></li>
+                </ul>
+            </li>
+            {% endwith %}
             <li><a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
+            {% if client_portal_url %}
+            <li class="nav-portal-item"><a href="{{ client_portal_url }}" class="nav-portal-btn" target="_blank" rel="noopener"><i class="fas fa-lock"></i> Client Login</a></li>
+            {% endif %}
         </ul>
     </div>
 </nav>
@@ -86,7 +111,12 @@
 <!-- Success/Error Modal -->
 {% if messages %}
 {% for message in messages %}
-{% if message.tags == 'success' %}
+{% if message.level_tag == 'success' %}
+{% if ga_measurement_id and 'ga-lead' in message.extra_tags %}
+<script>gtag('event', 'generate_lead', {form_name: 'contact'});</script>
+{% elif ga_measurement_id and 'ga-signup' in message.extra_tags %}
+<script>gtag('event', 'sign_up', {method: 'newsletter'});</script>
+{% endif %}
 <div class="success-overlay" id="successOverlay">
     <div class="success-modal">
         <div class="success-checkmark">
@@ -98,15 +128,24 @@
             </div>
         </div>
         <h2>Thank You! 🎉</h2>
+        {% if 'newsletter' in message.message %}
+        <p>{{ message }}</p>
+        <div class="success-details">
+            <span>📬 You'll receive our latest finance tips and updates</span>
+        </div>
+        {% else %}
         <p>Your message has been sent successfully!</p>
         <div class="success-details">
             <span>✅ Our team will review your inquiry</span>
             <span>📞 We'll get back to you within 24 hours</span>
             <span>💼 Expert financial guidance awaits you</span>
         </div>
+        {% endif %}
         <button class="success-btn" onclick="closeSuccessModal()">Got it! 👍</button>
     </div>
 </div>
+{% elif message.level_tag == 'info' %}
+<div class="alert alert-info">{{ message }}</div>
 {% else %}
 <div class="alert alert-error">{{ message }}</div>
 {% endif %}
@@ -126,17 +165,18 @@
                     <img src="{% static 'images/logo.jpeg' %}" alt="KA Logo" class="footer-logo-img">
                     <h3 class="footer-heading">Kotak & Associates</h3>
                 </div>
-                <p class="footer-tagline">A & B Business Advisory LLP</p>
+                <p class="footer-tagline">A & B Kotak House India Pvt. Ltd.</p>
                 <p class="footer-desc">
                     Expert Virtual CFO services helping businesses achieve financial clarity, growth, and success.
                 </p>
                 <!-- Social Media -->
+                {% if social_links %}
                 <div class="footer-socials">
-                    <a href="#" class="social-link" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#" class="social-link" title="Twitter"><i class="fab fa-x-twitter"></i></a>
-                    <a href="#" class="social-link" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social-link" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    {% for s in social_links %}
+                    <a href="{{ s.url }}" class="social-link" title="{{ s.name }}" aria-label="{{ s.name }}" target="_blank" rel="noopener"><i class="{{ s.icon }}"></i></a>
+                    {% endfor %}
                 </div>
+                {% endif %}
             </div>
 
             <!-- Quick Links -->
@@ -148,7 +188,9 @@
                     <li><a href="{% url 'services' %}">Services</a></li>
                     <li><a href="{% url 'gallery' %}">Gallery</a></li>
                     <li><a href="{% url 'process' %}">Process</a></li>
+                    <li><a href="{% url 'blog_list' %}">Blog</a></li>
                     <li><a href="{% url 'contact' %}">Contact</a></li>
+                    {% if client_portal_url %}<li><a href="{{ client_portal_url }}" target="_blank" rel="noopener">Client Login</a></li>{% endif %}
                 </ul>
             </div>
 
@@ -162,11 +204,11 @@
                     </li>
                     <li>
                         <span class="fc-icon">&#128222;</span>
-                        <span>7990432667 / 9427877187</span>
+                        <span><a href="tel:+917990432667">+91 79904 32667</a> / <a href="tel:+919427877187">+91 94278 77187</a></span>
                     </li>
                     <li>
                         <span class="fc-icon">&#9993;</span>
-                        <span>kotak810@gmail.com</span>
+                        <span><a href="mailto:kotak810@gmail.com">kotak810@gmail.com</a></span>
                     </li>
                 </ul>
             </div>
@@ -175,8 +217,7 @@
             <div class="footer-col">
                 <h3 class="footer-heading">Working Hours</h3>
                 <ul class="footer-hours">
-                    <li><span>Monday - Friday</span><span>9:00 AM - 6:00 PM</span></li>
-                    <li><span>Saturday</span><span>10:00 AM - 4:00 PM</span></li>
+                    <li><span>Monday - Saturday</span><span>10:30 AM - 6:30 PM</span></li>
                     <li><span>Sunday</span><span>Closed</span></li>
                 </ul>
 
@@ -184,7 +225,8 @@
                 <p class="footer-newsletter-text">Subscribe for financial tips & updates</p>
                 <form class="footer-newsletter" method="POST" action="{% url 'newsletter_subscribe' %}">
                     {% csrf_token %}
-                    <input type="email" name="newsletter_email" placeholder="Your email" required>
+                    <div class="hp-field" aria-hidden="true"><label>Leave this field empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+                    <input type="email" name="newsletter_email" placeholder="Your email" required maxlength="254">
                     <button type="submit">&#10148;</button>
                 </form>
             </div>
@@ -192,7 +234,7 @@
 
         <!-- Footer Bottom -->
         <div class="footer-bottom">
-            <p>&copy; 2026 Kotak & Associates & A & B Business Advisory LLP. All rights reserved.</p>
+            <p>&copy; {% now "Y" %} Kotak & Associates and A & B Kotak House India Pvt. Ltd. All rights reserved.</p>
             <div class="footer-legal">
                 <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
                 <span>|</span>
@@ -338,7 +380,7 @@ document.querySelectorAll('.fade-in, .fc-fade').forEach(el => fadeObserver.obser
         },
         {
             keywords: ['founder', 'who', 'team', 'about', 'company', 'background'],
-            answer: 'Kotak & Associates & A & B Business Advisory LLP was founded by <strong>Gaurang Kotak</strong> and <strong>Bharat Baneree</strong>. Our team of experienced finance professionals is dedicated to helping businesses achieve financial clarity and growth. &#127942;<br><br>Learn more on our <a href="/about/">About Us page</a>!'
+            answer: 'Kotak & Associates and A & B Kotak House India Pvt. Ltd. were founded by <strong>Gaurang Kotak</strong> and <strong>Bharat Baneree</strong>. Our team of experienced finance professionals is dedicated to helping businesses achieve financial clarity and growth. &#127942;<br><br>Learn more on our <a href="/about/">About Us page</a>!'
         },
         {
             keywords: ['process', 'how it works', 'steps', 'procedure', 'kaise', 'kevi rite'],
@@ -404,7 +446,11 @@ document.querySelectorAll('.fade-in, .fc-fade').forEach(el => fadeObserver.obser
         msgDiv.className = 'chat-msg ' + sender;
         var bubbleDiv = document.createElement('div');
         bubbleDiv.className = 'chat-bubble';
-        bubbleDiv.innerHTML = text;
+        if (sender === 'user') {
+            bubbleDiv.textContent = text;  // visitor's own words: plain text only
+        } else {
+            bubbleDiv.innerHTML = text;    // built-in answers contain links
+        }
         msgDiv.appendChild(bubbleDiv);
         chatBody.appendChild(msgDiv);
         chatBody.scrollTop = chatBody.scrollHeight;

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if active_category_label %}{{ active_category_label }} | {% endif %}Insights & Blog | Kotak & Associates{% endblock %}
+{% block meta_desc %}Practical articles on financial planning, cash flow, GST, KPIs and IPO readiness from the Virtual CFO team at Kotak & Associates, Ahmedabad.{% endblock %}
+{% block og_title %}Insights & Blog | Kotak & Associates{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="page-header-bg">
+        <span class="ph-shape ph-shape-1"></span>
+        <span class="ph-shape ph-shape-2"></span>
+        <span class="ph-shape ph-shape-3"></span>
+    </div>
+    <div class="page-header-inner">
+        <span class="ph-badge"><i class="fas fa-newspaper"></i> Insights</span>
+        <h1>Finance <span class="ph-highlight">Insights</span> for Growing Businesses</h1>
+        <p>Practical guidance on planning, cash flow, compliance and growth &mdash; from our Virtual CFO team.</p>
+    </div>
+</section>
+
+<section class="blog-section">
+    <div class="container">
+
+        {% if categories|length > 1 %}
+        <nav class="blog-filters" aria-label="Filter articles by topic">
+            <a href="{% url 'blog_list' %}" class="blog-chip {% if not active_category %}active{% endif %}">All</a>
+            {% for key, label in categories %}
+            <a href="{% url 'blog_list' %}?category={{ key }}" class="blog-chip {% if active_category == key %}active{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </nav>
+        {% endif %}
+
+        {% if page.object_list %}
+        <div class="blog-grid">
+            {% for post in page.object_list %}
+            <a href="{{ post.get_absolute_url }}" class="blog-card fade-in">
+                <div class="blog-card-img">
+                    <img src="{% static post.cover_image %}" alt="" loading="lazy">
+                    <span class="blog-tag">{{ post.get_category_display }}</span>
+                </div>
+                <div class="blog-card-body">
+                    <h2 class="blog-card-title">{{ post.title }}</h2>
+                    <p class="blog-card-summary">{{ post.summary }}</p>
+                    <div class="blog-meta">
+                        <span><i class="far fa-calendar"></i> {{ post.published_at|date:"j M Y" }}</span>
+                        <span><i class="far fa-clock"></i> {{ post.reading_minutes }} min read</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if page.has_other_pages %}
+        <nav class="blog-pagination" aria-label="More articles">
+            {% if page.has_previous %}
+            <a href="?{% if active_category %}category={{ active_category }}&{% endif %}page={{ page.previous_page_number }}"><i class="fas fa-arrow-left"></i> Newer</a>
+            {% endif %}
+            <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+            {% if page.has_next %}
+            <a href="?{% if active_category %}category={{ active_category }}&{% endif %}page={{ page.next_page_number }}">Older <i class="fas fa-arrow-right"></i></a>
+            {% endif %}
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="blog-empty fade-in">
+            <i class="far fa-newspaper"></i>
+            <h2>Articles coming soon</h2>
+            <p>We're preparing practical guides on financial planning, GST and growth. Subscribe below to get them first.</p>
+        </div>
+        {% endif %}
+
+        <div class="blog-subscribe fade-in">
+            <div>
+                <h2>Get new articles in your inbox</h2>
+                <p>Occasional, practical finance tips for business owners. No spam.</p>
+            </div>
+            <form method="POST" action="{% url 'newsletter_subscribe' %}" class="blog-subscribe-form">
+                {% csrf_token %}
+                <div class="hp-field" aria-hidden="true"><label>Leave this field empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+                <input type="email" name="newsletter_email" placeholder="Your email address" required maxlength="254" aria-label="Email address">
+                <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
