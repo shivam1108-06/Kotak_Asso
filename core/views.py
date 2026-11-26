@@ -516,7 +516,7 @@ def service_detail(request, slug):
 
 
 GALLERY_PHOTOS = [
-    {'file': 'images/office/office-05.jpg', 'title': 'Our Office Reception', 'caption': 'A & B Kotak House India Pvt. Ltd. and Kotak & Associates'},
+    {'file': 'images/office/office-05.jpg', 'title': 'Our Office Reception', 'caption': 'Kotak House India Pvt. Ltd. and Kotak & Associates'},
     {'file': 'images/office/office-01.jpg', 'title': 'Director Cabin', 'caption': 'Where strategy meets execution'},
     {'file': 'images/office/office-10.jpg', 'title': 'Client Lounge', 'caption': 'A warm welcome for every client'},
     {'file': 'images/office/office-09.jpg', 'title': 'Workstation Area', 'caption': 'Our team hard at work'},

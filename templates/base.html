@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Kotak & Associates | A & B Kotak House India Pvt. Ltd.{% endblock %}</title>
+    <title>{% block title %}Kotak & Associates | Kotak House India Pvt. Ltd.{% endblock %}</title>
     <meta name="description" content="{% block meta_desc %}Expert Virtual CFO & Financial Advisory services in Ahmedabad. Financial Planning, Budgeting, Cash Flow Management, KPI Tracking, IPO Advisory by Kotak & Associates.{% endblock %}">
     <meta name="keywords" content="Virtual CFO, Financial Planning, Business Advisory, GST Compliance, CA Firm Ahmedabad, Kotak Associates">
     <meta name="author" content="Kotak & Associates">
@@ -27,7 +27,7 @@
     {
         "@context": "https://schema.org",
         "@type": "ProfessionalService",
-        "name": "Kotak & Associates and A & B Kotak House India Pvt. Ltd.",
+        "name": "Kotak & Associates and Kotak House India Pvt. Ltd.",
         "description": "Expert Virtual CFO and Financial Advisory Services",
         "url": "{{ request.scheme }}://{{ request.get_host }}/",
         "telephone": "+917990432667",
@@ -75,7 +75,7 @@
             <img src="{% static 'images/logo.jpeg' %}" alt="KA Logo" class="logo-img">
             <span class="logo-text">
                 Kotak & Associates
-                <span>A & B Kotak House India Pvt. Ltd.</span>
+                <span>Kotak House India Pvt. Ltd.</span>
             </span>
         </a>
         <button class="nav-hamburger" id="navToggle" aria-label="Toggle navigation">
@@ -101,9 +101,6 @@
             </li>
             {% endwith %}
             <li><a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
-            {% if client_portal_url %}
-            <li class="nav-portal-item"><a href="{{ client_portal_url }}" class="nav-portal-btn" target="_blank" rel="noopener"><i class="fas fa-lock"></i> Client Login</a></li>
-            {% endif %}
         </ul>
     </div>
 </nav>
@@ -165,7 +162,7 @@
                     <img src="{% static 'images/logo.jpeg' %}" alt="KA Logo" class="footer-logo-img">
                     <h3 class="footer-heading">Kotak & Associates</h3>
                 </div>
-                <p class="footer-tagline">A & B Kotak House India Pvt. Ltd.</p>
+                <p class="footer-tagline">Kotak House India Pvt. Ltd.</p>
                 <p class="footer-desc">
                     Expert Virtual CFO services helping businesses achieve financial clarity, growth, and success.
                 </p>
@@ -190,7 +187,6 @@
                     <li><a href="{% url 'process' %}">Process</a></li>
                     <li><a href="{% url 'blog_list' %}">Blog</a></li>
                     <li><a href="{% url 'contact' %}">Contact</a></li>
-                    {% if client_portal_url %}<li><a href="{{ client_portal_url }}" target="_blank" rel="noopener">Client Login</a></li>{% endif %}
                 </ul>
             </div>
 
@@ -234,7 +230,7 @@
 
         <!-- Footer Bottom -->
         <div class="footer-bottom">
-            <p>&copy; {% now "Y" %} Kotak & Associates and A & B Kotak House India Pvt. Ltd. All rights reserved.</p>
+            <p>&copy; {% now "Y" %} Kotak & Associates and Kotak House India Pvt. Ltd. All rights reserved.</p>
             <div class="footer-legal">
                 <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
                 <span>|</span>
@@ -249,12 +245,14 @@
     <i class="fas fa-arrow-up"></i>
 </button>
 
-<!-- WhatsApp Floating Button -->
-<a href="https://wa.me/917990432667?text=Hello%20Kotak%20%26%20Associates!%20I%20want%20to%20know%20more%20about%20your%20services." class="wa-float" target="_blank" title="Chat on WhatsApp">
-    <div class="wa-pulse"></div>
-    <i class="fab fa-whatsapp"></i>
-    <span class="wa-tooltip">Chat with us</span>
+{% if client_portal_url %}
+<!-- Explore Veritai Floating Button -->
+<a href="{{ client_portal_url }}" class="veritai-float" target="_blank" rel="noopener" title="Explore Veritai – AI invoice processing for GST &amp; Tally">
+    <span class="veritai-pulse"></span>
+    <span class="veritai-logo-wrap"><img src="{% static 'images/Ver.jpeg' %}" alt="Veritai" class="veritai-logo" width="58" height="58"></span>
+    <span class="veritai-tooltip">Explore Veritai</span>
 </a>
+{% endif %}
 
 <!-- Navbar scroll + Hamburger + Preloader + Scroll-to-Top -->
 <script>
@@ -380,7 +378,7 @@ document.querySelectorAll('.fade-in, .fc-fade').forEach(el => fadeObserver.obser
         },
         {
             keywords: ['founder', 'who', 'team', 'about', 'company', 'background'],
-            answer: 'Kotak & Associates and A & B Kotak House India Pvt. Ltd. were founded by <strong>Gaurang Kotak</strong> and <strong>Bharat Baneree</strong>. Our team of experienced finance professionals is dedicated to helping businesses achieve financial clarity and growth. &#127942;<br><br>Learn more on our <a href="/about/">About Us page</a>!'
+            answer: 'Kotak & Associates and Kotak House India Pvt. Ltd. were founded by <strong>Gaurang Kotak</strong> and <strong>Bharat Baneree</strong>. Our team of experienced finance professionals is dedicated to helping businesses achieve financial clarity and growth. &#127942;<br><br>Learn more on our <a href="/about/">About Us page</a>!'
         },
         {
             keywords: ['process', 'how it works', 'steps', 'procedure', 'kaise', 'kevi rite'],

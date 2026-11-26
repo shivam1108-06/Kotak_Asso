@@ -5211,50 +5211,62 @@ section:nth-child(even) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   WHATSAPP FLOATING BUTTON
+   EXPLORE VERITAI FLOATING BUTTON
    ═══════════════════════════════════════════════════════════ */
-@keyframes waPulse {
+@keyframes veritaiPulse {
     0% { transform: scale(1); opacity: 0.5; }
     100% { transform: scale(2.2); opacity: 0; }
 }
 
-.wa-float {
+.veritai-float {
     position: fixed;
     bottom: 30px;
     right: 28px;
     z-index: 9998;
     width: 58px;
     height: 58px;
-    background: #25D366;
+    background: #fff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    box-shadow: 0 6px 24px rgba(37, 211, 102, 0.4);
+    box-shadow: 0 6px 24px rgba(91, 50, 150, 0.4);
     transition: all 0.3s;
 }
 
-.wa-float:hover {
+.veritai-float:hover {
     transform: scale(1.1);
-    box-shadow: 0 8px 32px rgba(37, 211, 102, 0.5);
+    box-shadow: 0 8px 32px rgba(91, 50, 150, 0.55);
 }
 
-.wa-float i {
-    font-size: 1.8rem;
-    color: #fff;
+.veritai-logo-wrap {
+    position: relative;
     z-index: 2;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #fff;
 }
 
-.wa-pulse {
+.veritai-logo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.45);
+}
+
+.veritai-pulse {
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background: #25D366;
-    animation: waPulse 2s ease-out infinite;
+    background: #6b3fa0;
+    animation: veritaiPulse 2s ease-out infinite;
 }
 
-.wa-tooltip {
+.veritai-tooltip {
     position: absolute;
     right: 68px;
     top: 50%;
@@ -5271,20 +5283,19 @@ section:nth-child(even) {
     transition: all 0.3s;
 }
 
-.wa-float:hover .wa-tooltip {
+.veritai-float:hover .veritai-tooltip {
     opacity: 1;
     transform: translateY(-50%) translateX(0);
 }
 
 @media (max-width: 768px) {
-    .wa-float {
+    .veritai-float {
         bottom: 22px;
         right: 18px;
         width: 52px;
         height: 52px;
     }
-    .wa-float i { font-size: 1.6rem; }
-    .wa-tooltip { display: none; }
+    .veritai-tooltip { display: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════

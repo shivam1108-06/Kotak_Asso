@@ -130,7 +130,15 @@ DATABASES = {
     )
 }
 
-if IS_PRODUCTION and DATABASES["default"]["ENGINE"].endswith("sqlite3"):
+# SQLite is fine on hosts with a permanent disk (e.g. PythonAnywhere): set
+# ALLOW_SQLITE=true there. On Railway the disk is wiped, so Postgres is needed.
+ALLOW_SQLITE = os.getenv("ALLOW_SQLITE", "False").lower() == "true"
+
+if (
+    IS_PRODUCTION
+    and not ALLOW_SQLITE
+    and DATABASES["default"]["ENGINE"].endswith("sqlite3")
+):
     raise ImproperlyConfigured(
         "DATABASE_URL is not set: production would use SQLite, whose data is "
         "wiped on every redeploy. Add a PostgreSQL database on Railway."
@@ -231,7 +239,7 @@ SOCIAL_LINKS = {
 # ==========================
 # CLIENT PORTAL
 # ==========================
-# "Client Login" button in the menu and the portal section on the Services
+# "Explore Veritai" button in the menu and the portal section on the Services
 # page link here. Set to "" to hide both.
 
 CLIENT_PORTAL_URL = os.getenv("CLIENT_PORTAL_URL", "https://veritai.ai/login")
