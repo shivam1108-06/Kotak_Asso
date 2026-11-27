@@ -121,7 +121,7 @@ WSGI_APPLICATION = "kotak_project.wsgi.application"
 # DATABASE
 # ==========================
 
-# Uses DATABASE_URL (Railway PostgreSQL) when set, otherwise local SQLite.
+# Uses DATABASE_URL (PostgreSQL, e.g. Supabase) when set, otherwise local SQLite.
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
@@ -129,6 +129,11 @@ DATABASES = {
         conn_health_checks=True,
     )
 }
+
+# Supabase's transaction pooler (port 6543) can't keep server-side cursors
+# open between transactions, so Django must not use them.
+if DATABASES["default"]["ENGINE"].endswith("postgresql"):
+    DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
 
 # SQLite is fine on hosts with a permanent disk (e.g. PythonAnywhere): set
 # ALLOW_SQLITE=true there. On Railway the disk is wiped, so Postgres is needed.
